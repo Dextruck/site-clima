@@ -32,16 +32,18 @@ h2 {
     margin-bottom: 20px;
 }
 
-input[type="text"] {
+input[type="text"], #searchInput {
     width: 100%;
     padding: 10px;
+    font-size: 16px;
     border: 1px solid #ccc;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box; /* Importante para evitar o corte no campo de texto */
     transition: border 0.3s;
 }
 
-input[type="text"]:focus {
+input[type="text"]:focus, #searchInput:focus {
     border-color: #4a90e2;
     outline: none;
 }
@@ -82,4 +84,19 @@ footer {
     position: relative;
     bottom: 0;
     width: 100%;
+}
+
+/* Responsividade adicional */
+@media (max-width: 768px) {
+    #searchInput {
+        font-size: 14px;
+        padding: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    #searchInput {
+        font-size: 12px;
+        padding: 8px;
+    }
 }
