@@ -18,44 +18,62 @@
             <input type="text" id="searchInput" placeholder="Digite características...">
         </section>
         <section id="links">
-            <!-- <h2>Sites de Previsão do Tempo</h2> -->
+        <?php
+        // Conectar ao banco de dados
+        $conn = new PDO("pgsql:host=db;port=5432;dbname=weather_db", "myuser", "mypassword");
 
-            <?php
-            // Conectar ao banco de dados
-            $conn = new PDO("pgsql:host=db;port=5432;dbname=weather_db", "myuser", "mypassword");
+        // Buscar dados da tabela com JOIN para trazer atributos relacionados
+        $stmt = $conn->query("
+            SELECT wl.id, wl.name, wl.url, string_agg(a.name, ', ') as attributes, wl.collection
+            FROM weather_links wl
+            LEFT JOIN weather_links_atributes wla 
+            ON wl.id = wla.id_wheater_links
+            LEFT JOIN atributes a 
+            ON wla.id_atributes = a.id
+            GROUP BY wl.id
+            ORDER BY wl.collection DESC, wl.name
+        ");
 
-            // Buscar dados da tabela com JOIN para trazer atributos relacionados
-            $stmt = $conn->query("
-                SELECT wl.id, wl.name, wl.url, string_agg(a.name, ', ') as attributes, wl.collection
-                FROM weather_links wl
-                left JOIN weather_links_atributes wla 
-                ON wl.id = wla.id_wheater_links
-                left JOIN atributes a 
-                ON wla.id_atributes = a.id
-                GROUP BY wl.id
-                order by wl.collection desc, wl.name
-                ");
+        $links = $stmt->fetchAll();
+        $collection = null;
 
-            $links = $stmt->fetchAll();
-            $collection = null;
-            // Exibir cada link com seus atributos
-
-            foreach ($links as $link) {
-                if (is_null($collection) || $collection != $link['collection']) {
-                    echo "<h2>" . $link['collection'] . "</h2>";
-                    echo "<ul id=\"linkList\">";
+        foreach ($links as $link) {
+            if (is_null($collection) || $collection != $link['collection']) {
+                if (!is_null($collection)) {
+                    echo "</ul>";
                 }
-                $collection = $link['collection'];
-                // Usar atributos diretamente, pois já é uma string
-                echo "<li data-attributes=\"" . htmlspecialchars($link['attributes'] . $link['collection'] . $link['name']) . "\">";
-                echo "<a href=\"" . htmlspecialchars($link['url']) . "\" target=\"_blank\">" . htmlspecialchars($link['name']) . "</a>";
-                echo "</li>";
+            
+                echo "<div class='spacer'></div>";
+                echo "<h2>" . htmlspecialchars($link['collection']) . "</h2>";
+                echo "<ul class=\"linkList\">";
             }
-            echo "</ul>";
-            ?>
+            $collection = $link['collection'];
+            
+            // Verifica se há atributos antes de adicionar
+            if (isset($link['attributes'])){
+                $attributesForSearch = $link['attributes'];
+                // Se a coleção e o nome não estiverem vazios, adiciona-os aos atributos
+                if (!empty($link['collection']) && !empty($link['name'])) {
+                    $attributesForSearch .= ','.$link['collection'].','.$link['name'];
+                }
+            }else{
+                if (!empty($link['collection']) && !empty($link['name'])) {
+                    $attributesForSearch = $link['collection'].','.$link['name'];
+                }
+            }
 
-        </section>
+
+            echo "<li data-attributes=\"" . htmlspecialchars($attributesForSearch) . "\">";
+            echo "<a href=\"" . htmlspecialchars($link['url']) . "\" target=\"_blank\">" . htmlspecialchars($link['name']) . "</a>";
+            echo "</li>";
+        }
+        echo "</ul>";
+        ?>
+    </section>
     </main>
+    <footer>
+        <p>&copy; <?php echo date("Y"); ?> Previsão do Tempo</p>
+    </footer>
     <script src="script/script.js"></script>
 </body>
 

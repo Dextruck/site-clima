@@ -1,21 +1,32 @@
-// script.js
 document.addEventListener("DOMContentLoaded", function () {
   const searchInput = document.getElementById("searchInput");
-  const linkList = document.getElementById("linkList");
+  const linkLists = [...document.querySelectorAll(".linkList")]; // Array para otimizar
+  const titles = [...document.querySelectorAll('h2')]; // Pegando todos os títulos de coleção
 
   searchInput.addEventListener("input", () => {
     const filter = searchInput.value.toLowerCase().trim();
-    const links = linkList.getElementsByTagName("li");
-    for (const link of links) {
-      console.log(link.getAttribute("data-attributes"));
-      const attributes = link.getAttribute("data-attributes").toLowerCase();
-      const attributesArray = attributes.split(",").map((attr) => attr.trim());
 
-      if (attributesArray.some((attr) => attr.includes(filter))) {
-        link.style.display = "";
-      } else {
-        link.style.display = "none";
-      }
-    }
+    linkLists.forEach((linkList, index) => {
+      let hasVisibleItems = false; // Flag para verificar se há itens visíveis
+
+      [...linkList.children].forEach((link) => {
+        const attributes = link.getAttribute("data-attributes").toLowerCase();
+        const attributesArray = attributes.split(",").map((attr) => attr.trim());
+
+        // Se o campo de pesquisa estiver vazio, exibe todos os itens
+        const shouldDisplay = filter === "" || attributesArray.some((attr) => attr.includes(filter));
+
+        // Usa uma classe CSS para controlar a visibilidade
+        link.style.display = shouldDisplay ? "" : "none";
+
+        // Atualiza a flag se encontrar ao menos um item visível
+        if (shouldDisplay) {
+          hasVisibleItems = true;
+        }
+      });
+
+      // Se não houver itens visíveis, oculta o título da coleção
+      titles[index].style.display = hasVisibleItems ? "" : "none";
+    });
   });
 });
