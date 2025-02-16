@@ -2,7 +2,7 @@ services:
   php:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: src/docker/Dockerfile
     container_name: php_container
     volumes:
       - ./php:/var/www/html
