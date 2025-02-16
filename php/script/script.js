@@ -1,28 +1,32 @@
-document.addEventListener('DOMContentLoaded', async function() {
-    const searchInput = document.getElementById('searchInput');
-    const linkList = document.getElementById('linkList');
+document.addEventListener("DOMContentLoaded", function () {
+  const searchInput = document.getElementById("searchInput");
+  const linkLists = [...document.querySelectorAll(".linkList")]; // Array para otimizar
+  const titles = [...document.querySelectorAll('h2')]; // Pegando todos os títulos de coleção
 
-    // Fetch data from PHP API
-    const response = await fetch('http://localhost:8080/api.php');
-    const links = await response.json();
+  searchInput.addEventListener("input", () => {
+    const filter = searchInput.value.toLowerCase().trim();
 
-    linkList.innerHTML = ''; // Clear existing content
+    linkLists.forEach((linkList, index) => {
+      let hasVisibleItems = false; // Flag para verificar se há itens visíveis
 
-    // Render each link dynamically
-    links.forEach(link => {
-        const li = document.createElement('li');
-        li.setAttribute('data-attributes', link.attributes);
-        li.innerHTML = `<a href="${link.url}" target="_blank">${link.name}</a>`;
-        linkList.appendChild(li);
-    });
+      [...linkList.children].forEach((link) => {
+        const attributes = link.getAttribute("data-attributes").toLowerCase();
+        const attributesArray = attributes.split(",").map((attr) => attr.trim());
 
-    searchInput.addEventListener('input', function() {
-        const filter = searchInput.value.toLowerCase();
-        const listItems = linkList.getElementsByTagName('li');
+        // Se o campo de pesquisa estiver vazio, exibe todos os itens
+        const shouldDisplay = filter === "" || attributesArray.some((attr) => attr.includes(filter));
 
-        for (let i = 0; i < listItems.length; i++) {
-            const attributes = listItems[i].getAttribute('data-attributes').toLowerCase();
-            listItems[i].style.display = attributes.includes(filter) ? '' : 'none';
+        // Usa uma classe CSS para controlar a visibilidade
+        link.style.display = shouldDisplay ? "" : "none";
+
+        // Atualiza a flag se encontrar ao menos um item visível
+        if (shouldDisplay) {
+          hasVisibleItems = true;
         }
+      });
+
+      // Se não houver itens visíveis, oculta o título da coleção
+      titles[index].style.display = hasVisibleItems ? "" : "none";
     });
+  });
 });
